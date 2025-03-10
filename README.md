@@ -13,7 +13,7 @@ A mobile app that:
 <span style="font-size: 18px;">[SauronVan]
 
 ## Credit
-Implemented from https://github.com/ultralytics/yolo-flutter-app
+Implemented from https://github.com/ultralytics/yolo-flutter-app by https://github.com/asabri97
 
 ## Note
 - JDK 17
