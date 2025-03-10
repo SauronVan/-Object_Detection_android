@@ -18,16 +18,12 @@ class CameraView extends StatelessWidget {
           UltralyticsYoloCameraPreview(
             controller: controller.cameraController,
             predictor: controller.objectDetector,
-            onCameraCreated: () {
-            },
+            onCameraCreated: () {},
             boundingBoxesColorList: [Colors.red, Colors.blue, Colors.green],
           ),
           StreamBuilder<List<DetectedObject?>?>(
             stream: controller.objectDetector.detectionResultStream,
             builder: (context, snapshot) {
-              if (!controller.isRecording.value) {
-                return const SizedBox.shrink(); // Hide bounding boxes when not recording
-              }
               if (!snapshot.hasData || snapshot.data == null) {
                 return const SizedBox.shrink();
               }
@@ -79,18 +75,21 @@ class CameraView extends StatelessWidget {
                   children: [
                     Obx(() => IconButton(
                       icon: Icon(
-                        controller.isRecording.value ? Icons.stop : Icons.play_arrow,
+                        controller.isRecording.value
+                            ? Icons.stop
+                            : Icons.play_arrow,
                         color: Colors.white,
                         size: 40,
                       ),
-                        onPressed: () {
-                          controller.isRecording.value = !controller.isRecording.value;
-                          if (controller.isRecording.value) {
-                            controller.startListening();
-                          } else {
-                            controller.stopListening();
-                          }
+                      onPressed: () {
+                        controller.isRecording.value =
+                        !controller.isRecording.value;
+                        if (controller.isRecording.value) {
+                          controller.startListening();
+                        } else {
+                          controller.stopListening();
                         }
+                      },
                     )),
                     const SizedBox(width: 20),
                     IconButton(

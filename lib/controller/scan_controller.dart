@@ -71,7 +71,9 @@ class ScanController extends GetxController {
     final file = io.File(path);
     if (!await file.exists()) {
       final byteData = await rootBundle.load(assetPath);
-      await file.writeAsBytes(byteData.buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
+      await file.writeAsBytes(
+          byteData.buffer.asUint8List(
+              byteData.offsetInBytes, byteData.lengthInBytes));
     }
     return file.path;
   }
@@ -166,7 +168,11 @@ class ScanController extends GetxController {
   Future<void> loadLabels() async {
     try {
       final data = await rootBundle.loadString(labelsFilePath);
-      final labelList = data.split('\n').map((label) => label.trim().toLowerCase()).where((label) => label.isNotEmpty).toList();
+      final labelList = data
+          .split('\n')
+          .map((label) => label.trim().toLowerCase())
+          .where((label) => label.isNotEmpty)
+          .toList();
       labels.addAll(labelList);
     } catch (e) {}
   }
@@ -177,8 +183,7 @@ class ScanController extends GetxController {
   }
 
   Future<void> checkForMatchingBbox() async {
-    if (!isRecording.value) return;
-
+    // Removed the isRecording check so scanning is continuous
     if (recognizedWord.value.isEmpty) {
       return;
     }
@@ -196,10 +201,8 @@ class ScanController extends GetxController {
       }
     }
 
-    if (matchFound) {
-      if (await Vibration.hasVibrator()) {
-        Vibration.vibrate(duration: 500);
-      }
+    if (matchFound && await Vibration.hasVibrator()) {
+      Vibration.vibrate(duration: 500);
     }
   }
 
