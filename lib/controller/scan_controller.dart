@@ -183,7 +183,6 @@ class ScanController extends GetxController {
   }
 
   Future<void> checkForMatchingBbox() async {
-    // Removed the isRecording check so scanning is continuous
     if (recognizedWord.value.isEmpty) {
       return;
     }
