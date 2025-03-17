@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ai_object_detector/controller/scan_controller.dart'; // Adjust path as needed
+import 'package:ai_object_detector/controller/scan_controller.dart'; 
 import 'package:ultralytics_yolo/ultralytics_yolo.dart';
 import 'dart:developer';
 
