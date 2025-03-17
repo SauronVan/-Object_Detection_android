@@ -69,7 +69,7 @@ class MainMenu extends StatelessWidget {
                     ),
                   );
                 },
-                child: const Text("Naming Object"),
+                child: const Text("Describe Environment"),
               ),
             ),
           ],
