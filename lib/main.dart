@@ -35,7 +35,6 @@ class MainMenu extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // "Find Object" Button (500x100)
             SizedBox(
               width: 500,
               height: 100,
@@ -55,7 +54,6 @@ class MainMenu extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 40),
-            // "Naming Object" Button (500x100)
             SizedBox(
               width: 500,
               height: 100,
@@ -64,7 +62,6 @@ class MainMenu extends StatelessWidget {
                   textStyle: const TextStyle(fontSize: 28),
                 ),
                 onPressed: () {
-                  // Navigate to Detect View (Renamed to CameraViewWithRegionsAndVoice)
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -82,7 +79,7 @@ class MainMenu extends StatelessWidget {
   }
 }
 
-// Camera View with Back Button on Top
+
 class CameraViewWithBackButton extends StatelessWidget {
   const CameraViewWithBackButton({super.key});
 
@@ -91,10 +88,10 @@ class CameraViewWithBackButton extends StatelessWidget {
     return Scaffold(
       body: Stack(
         children: [
-          const CameraView(), // The existing camera view
+          const CameraView(),
           Positioned(
-            top: 40, // Adjust position as needed
-            left: 20, // Adjust position as needed
+            top: 40,
+            left: 20,
             child: FloatingActionButton(
               onPressed: () {
                 Navigator.pop(context);
@@ -116,10 +113,10 @@ class CameraDetectWithBackButton extends StatelessWidget {
     return Scaffold(
       body: Stack(
         children: [
-          const CameraViewWithVoice(), // The existing camera view
+          const CameraViewWithVoice(),
           Positioned(
-            top: 40, // Adjust position as needed
-            left: 20, // Adjust position as needed
+            top: 40,
+            left: 20,
             child: FloatingActionButton(
               onPressed: () {
                 Navigator.pop(context);
