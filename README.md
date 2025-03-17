@@ -10,7 +10,7 @@ A mobile app that:
 - Vibrates if target is found, which help target navigating
 
 ## Developer: 
-<span style="font-size: 18px;">[SauronVan]
+<span style="font-size: 18px;">[SauronVan](https://github.com/SauronVan)</span>
 
 ## Credit
 Implemented from https://github.com/ultralytics/yolo-flutter-app by https://github.com/asabri97
