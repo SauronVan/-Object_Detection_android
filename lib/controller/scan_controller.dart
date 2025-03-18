@@ -205,6 +205,7 @@ class ScanController extends GetxController {
     }
   }
 
+  // Clears the currently recognized target.
   void clearTarget() {
     recognizedWord.value = "";
   }

@@ -1,6 +1,8 @@
 import 'package:ai_object_detector/view/camera_view.dart';
-import 'package:ai_object_detector/view/detect_view.dart'; // Import Detect View
+import 'package:ai_object_detector/view/detect_view.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:ai_object_detector/controller/scan_controller.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,7 +13,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       title: 'AI Object Detection',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
@@ -79,7 +81,6 @@ class MainMenu extends StatelessWidget {
   }
 }
 
-
 class CameraViewWithBackButton extends StatelessWidget {
   const CameraViewWithBackButton({super.key});
 
@@ -94,6 +95,9 @@ class CameraViewWithBackButton extends StatelessWidget {
             left: 20,
             child: FloatingActionButton(
               onPressed: () {
+                // Clear target before returning
+                final scanController = Get.find<ScanController>();
+                scanController.clearTarget();
                 Navigator.pop(context);
               },
               backgroundColor: Colors.black.withOpacity(0.5),
@@ -105,6 +109,7 @@ class CameraViewWithBackButton extends StatelessWidget {
     );
   }
 }
+
 class CameraDetectWithBackButton extends StatelessWidget {
   const CameraDetectWithBackButton({super.key});
 
@@ -119,6 +124,9 @@ class CameraDetectWithBackButton extends StatelessWidget {
             left: 20,
             child: FloatingActionButton(
               onPressed: () {
+                // Clear target before returning
+                final scanController = Get.find<ScanController>();
+                scanController.clearTarget();
                 Navigator.pop(context);
               },
               backgroundColor: Colors.black.withOpacity(0.5),

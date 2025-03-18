@@ -47,12 +47,10 @@ class _CameraViewWithVoiceState extends State<CameraViewWithVoice> {
                       .toList();
 
                   // Log detected objects (optional)
-                  log("Detected objects: ${detectedObjects.map((e) => e.label)
-                      .toList()}");
+                  log("Detected objects: ${detectedObjects.map((e) => e.label).toList()}");
 
                   // Update controller with filtered results
-                  controller.updateDetectedObjects(detectedObjects.map((obj) =>
-                  {
+                  controller.updateDetectedObjects(detectedObjects.map((obj) => {
                     'label': obj.label,
                     'confidence': obj.confidence,
                     'boundingBox': {
@@ -81,19 +79,17 @@ class _CameraViewWithVoiceState extends State<CameraViewWithVoice> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Obx(() =>
-                      Text(
-                        "Target: ${controller.recognizedWord.value}",
-                        style: const TextStyle(
-                            fontSize: 20, color: Colors.white),
-                      )),
+                  Obx(() => Text(
+                    "Target: ${controller.recognizedWord.value}",
+                    style: const TextStyle(
+                        fontSize: 20, color: Colors.white),
+                  )),
                   const SizedBox(height: 10),
-                  Obx(() =>
-                      Text(
-                        "Command: ${controller.recognizedWords.value}",
-                        style: const TextStyle(
-                            fontSize: 16, color: Colors.white),
-                      )),
+                  Obx(() => Text(
+                    "Command: ${controller.recognizedWords.value}",
+                    style: const TextStyle(
+                        fontSize: 16, color: Colors.white),
+                  )),
                 ],
               ),
             ),
@@ -113,21 +109,17 @@ class _CameraViewWithVoiceState extends State<CameraViewWithVoice> {
       _isSpeaking = false;
     }
 
-    // Use the device's screen width from the context
     final screenWidth = MediaQuery.of(context).size.width;
-
-    // Dividing screen into three equal parts
     final leftBoundary = screenWidth / 3;
     final rightBoundary = 2 * (screenWidth / 3);
 
-    // Regions map
-    Map<String, List<String>> regionObjects = {
-      "left": [],
-      "middle": [],
-      "right": [],
+    Map<String, Map<String, int>> regionObjects = {
+      "left": {},
+      "middle": {},
+      "right": {},
     };
 
-    // Classify objects based on their bounding box position
+
     for (var obj in controller.detectedObjects) {
       if (obj['boundingBox'] == null) continue;
 
@@ -135,12 +127,12 @@ class _CameraViewWithVoiceState extends State<CameraViewWithVoice> {
       final left = bbox['left'];
       final width = bbox['width'];
       final right = left + width;
+      String label = obj['label'];
 
-      // If the object spans all three regions, assign it to the middle.
+      String region;
       if (left < leftBoundary && right > rightBoundary) {
-        regionObjects["middle"]?.add(obj['label']);
+        region = "middle";
       } else {
-        // Calculate the portion of the box in each region
         double leftPortion = (right < leftBoundary)
             ? 1.0
             : (left < leftBoundary)
@@ -155,32 +147,46 @@ class _CameraViewWithVoiceState extends State<CameraViewWithVoice> {
 
         double middlePortion = 1.0 - (leftPortion + rightPortion);
 
-        // Determine the dominant region for the object
         if (leftPortion >= middlePortion && leftPortion >= rightPortion) {
-          regionObjects["left"]?.add(obj['label']);
-        } else if (rightPortion >= leftPortion && rightPortion >= middlePortion) {
-          regionObjects["right"]?.add(obj['label']);
+          region = "left";
+        } else if (rightPortion >= leftPortion &&
+            rightPortion >= middlePortion) {
+          region = "right";
         } else {
-          regionObjects["middle"]?.add(obj['label']);
+          region = "middle";
         }
+      }
+
+      if (regionObjects[region]!.containsKey(label)) {
+        regionObjects[region]![label] = regionObjects[region]![label]! + 1;
+      } else {
+        regionObjects[region]![label] = 1;
       }
     }
 
-    // Construct speech text
     List<String> speechParts = [];
 
-    if (regionObjects["left"]!.isNotEmpty) {
-      speechParts.add(
-          "${regionObjects["left"]!.join(', ')} ${regionObjects["left"]!.length == 1 ? 'is' : 'are'} on the left");
-    }
-    if (regionObjects["middle"]!.isNotEmpty) {
-      speechParts.add(
-          "${regionObjects["middle"]!.join(', ')} ${regionObjects["middle"]!.length == 1 ? 'is' : 'are'} in the middle");
-    }
-    if (regionObjects["right"]!.isNotEmpty) {
-      speechParts.add(
-          "${regionObjects["right"]!.join(', ')} ${regionObjects["right"]!.length == 1 ? 'is' : 'are'} on the right");
-    }
+    regionObjects.forEach((region, objects) {
+      if (objects.isNotEmpty) {
+        List<String> objectDescriptions = [];
+        objects.forEach((label, count) {
+          if (count == 1) {
+            objectDescriptions.add("1 $label");
+          } else {
+            objectDescriptions.add("$count ${label}s");
+          }
+        });
+        String regionText = "";
+        if (region == "left") {
+          regionText = "on the left";
+        } else if (region == "middle") {
+          regionText = "in the middle";
+        } else if (region == "right") {
+          regionText = "on the right";
+        }
+        speechParts.add("${objectDescriptions.join(', ')} $regionText");
+      }
+    });
 
     if (speechParts.isEmpty) {
       await controller.flutterTts.speak("No objects detected.");
