@@ -71,7 +71,7 @@ class MainMenu extends StatelessWidget {
                     ),
                   );
                 },
-                child: const Text("Describe Environment"),
+                child: const Text("What's around"),
               ),
             ),
           ],
@@ -95,7 +95,6 @@ class CameraViewWithBackButton extends StatelessWidget {
             left: 20,
             child: FloatingActionButton(
               onPressed: () {
-                // Clear target before returning
                 final scanController = Get.find<ScanController>();
                 scanController.clearTarget();
                 Navigator.pop(context);
@@ -124,7 +123,6 @@ class CameraDetectWithBackButton extends StatelessWidget {
             left: 20,
             child: FloatingActionButton(
               onPressed: () {
-                // Clear target before returning
                 final scanController = Get.find<ScanController>();
                 scanController.clearTarget();
                 Navigator.pop(context);
