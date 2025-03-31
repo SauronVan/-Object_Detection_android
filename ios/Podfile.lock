@@ -1,0 +1,79 @@
+PODS:
+  - camera_avfoundation (0.0.1):
+    - Flutter
+  - device_info_plus (0.0.1):
+    - Flutter
+  - Flutter (1.0.0)
+  - flutter_tts (0.0.1):
+    - Flutter
+  - image_picker_ios (0.0.1):
+    - Flutter
+  - path_provider_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - permission_handler_apple (9.3.0):
+    - Flutter
+  - speech_to_text (0.0.1):
+    - Flutter
+    - FlutterMacOS
+    - Try
+  - Try (2.1.1)
+  - ultralytics_yolo (0.0.1):
+    - Flutter
+  - vibration (3.0.0):
+    - Flutter
+
+DEPENDENCIES:
+  - camera_avfoundation (from `.symlinks/plugins/camera_avfoundation/ios`)
+  - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
+  - Flutter (from `Flutter`)
+  - flutter_tts (from `.symlinks/plugins/flutter_tts/ios`)
+  - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
+  - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
+  - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
+  - speech_to_text (from `.symlinks/plugins/speech_to_text/darwin`)
+  - ultralytics_yolo (from `.symlinks/plugins/ultralytics_yolo/ios`)
+  - vibration (from `.symlinks/plugins/vibration/ios`)
+
+SPEC REPOS:
+  trunk:
+    - Try
+
+EXTERNAL SOURCES:
+  camera_avfoundation:
+    :path: ".symlinks/plugins/camera_avfoundation/ios"
+  device_info_plus:
+    :path: ".symlinks/plugins/device_info_plus/ios"
+  Flutter:
+    :path: Flutter
+  flutter_tts:
+    :path: ".symlinks/plugins/flutter_tts/ios"
+  image_picker_ios:
+    :path: ".symlinks/plugins/image_picker_ios/ios"
+  path_provider_foundation:
+    :path: ".symlinks/plugins/path_provider_foundation/darwin"
+  permission_handler_apple:
+    :path: ".symlinks/plugins/permission_handler_apple/ios"
+  speech_to_text:
+    :path: ".symlinks/plugins/speech_to_text/darwin"
+  ultralytics_yolo:
+    :path: ".symlinks/plugins/ultralytics_yolo/ios"
+  vibration:
+    :path: ".symlinks/plugins/vibration/ios"
+
+SPEC CHECKSUMS:
+  camera_avfoundation: dd002b0330f4981e1bbcb46ae9b62829237459a4
+  device_info_plus: bf2e3232933866d73fe290f2942f2156cdd10342
+  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  flutter_tts: 0f492aab6accf87059b72354fcb4ba934304771d
+  image_picker_ios: c560581cceedb403a6ff17f2f816d7fea1421fc1
+  path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
+  permission_handler_apple: 9878588469a2b0d0fc1e048d9f43605f92e6cec2
+  speech_to_text: 627d3fd2194770b51abb324ba45c2d39398f24a8
+  Try: 5ef669ae832617b3cee58cb2c6f99fb767a4ff96
+  ultralytics_yolo: 2faf55a572cea7a13a592b0d85c83e9400b7d9c6
+  vibration: 3797858f8cbf53d841e189ef8bd533d96e4ca93c
+
+PODFILE CHECKSUM: cd53e938615a1c64a704b8c95f6acb9211ebd9d9
+
+COCOAPODS: 1.16.2
