@@ -5,9 +5,15 @@
 
 A mobile app that:
 - Detects common objects in realtime via rear camera smartphone
-- Extract queried object (target) from voice command input
-- Confirm target by Google/Siri voice
-- Vibrates if target is found, which help target navigating
+- Find object:
+  - Extract queried object (target) from voice command input
+  - Confirm target by Google/Siri voice
+  - Vibrates if the target is found, which helpsthe  target navigate
+  - Vibration amplitude and duration proportional to the relative distance to object
+- What's around
+  - Divide screen into three regions (left, right, middle)
+  - Group objects into corresponding regions
+  - Response "object_count+object_label+corresponding region" as speech (google/siri voice)
 
 ## Developer: 
 <span style="font-size: 18px;">[SauronVan](https://github.com/SauronVan)</span>
@@ -23,6 +29,7 @@ Implemented from https://github.com/ultralytics/yolo-flutter-app by https://gith
 ## Demo
 
 ![Demo](assets/demo2.jpg "Demo")
+
 
 ## Getting Started
 
