@@ -1,4 +1,4 @@
-import 'dart:io';
+
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -17,7 +17,10 @@ class ScanController extends GetxController {
   late FlutterTts flutterTts;
   late ObjectDetector objectDetector;
 
-  // Observable states
+  // Frame counter for sampling every 10 frames.
+  int frameCount = 0;
+
+  // Observable states.
   final isCameraInitialized = false.obs;
   final recognizedWord = "".obs;
   final recognizedWords = "".obs;
@@ -26,11 +29,16 @@ class ScanController extends GetxController {
   final isSpeechInitialized = false.obs;
   final isRecording = false.obs;
 
-  // Model asset paths and formats based on platform.
+  // Model asset paths and formats.
   late final String modelFilePath;
   late final Format modelFormat;
   final String metadataFilePath = 'assets/metadata.yaml';
   final String labelsFilePath = 'assets/labels.txt';
+
+  // Variables to track detection state.
+  int _consecutiveDetectionCount = 0;
+  Map<String, dynamic>? _baseBoundingBox;      // Bounding box from the first detection in a sequence.
+  Map<String, dynamic>? _referenceBoundingBox;   // Set at the third consecutive detection.
 
   @override
   void onInit() {
@@ -54,7 +62,6 @@ class ScanController extends GetxController {
   }
 
   Future<void> _checkAndRequestPermissions() async {
-    // Request camera and microphone permissions.
     final statuses = await [
       Permission.camera,
       Permission.microphone,
@@ -69,26 +76,18 @@ class ScanController extends GetxController {
   }
 
   Future<void> initCameraAndDetector() async {
-    // Determine model asset and format based on platform.
-    if (Platform.isIOS) {
-      modelFilePath = 'assets/yolov8n.mlmodel';
-      modelFormat = Format.coreml;
-    } else {
-      modelFilePath = 'assets/yolov8n_int8.tflite';
-      modelFormat = Format.tflite;
-    }
+
+    modelFilePath = 'assets/yolov8n_int8.tflite';
+    modelFormat = Format.tflite;
 
     cameraController = UltralyticsYoloCameraController();
 
     try {
-      // Copy model asset (and metadata if needed) to an accessible file path.
       final modelPath = await _copyAssetToFile(modelFilePath);
       Get.log("Model copied to: $modelPath");
 
       String? metadataPath;
-      if (!Platform.isIOS) {
-        metadataPath = await _copyAssetToFile(metadataFilePath);
-      }
+      metadataPath = await _copyAssetToFile(metadataFilePath);
 
       final model = LocalYoloModel(
         id: '',
@@ -138,6 +137,10 @@ class ScanController extends GetxController {
   void _listenToDetectionResults() {
     objectDetector.detectionResultStream.listen(
           (results) {
+        frameCount++;
+        if (frameCount % 5 != 0) return; // Process every 10th frame.
+        if (frameCount > 10000) frameCount = 0; // Reset counter to prevent overflow.
+
         if (results != null && results.isNotEmpty) {
           final detected = results.map((obj) {
             return {
@@ -168,7 +171,7 @@ class ScanController extends GetxController {
       bool initialized = await speech.initialize(
         onStatus: (status) {
           if (status == 'done' || status == 'notListening') {
-            // Optionally restart listening if needed.
+            // Optionally restart listening.
           }
         },
         onError: (error) {
@@ -191,24 +194,39 @@ class ScanController extends GetxController {
       await initSpeechToText();
       if (!isSpeechInitialized.value) return;
     }
-
     if (speech.isListening) return;
 
     bool available = await speech.listen(
       onResult: (result) {
         final recognizedText = result.recognizedWords.trim().toLowerCase();
         recognizedWords.value = recognizedText;
-        if (recognizedText.isNotEmpty) {
-          final lastWord = recognizedText.split(" ").last;
-          if (labels.contains(lastWord)) {
-            recognizedWord.value = lastWord;
-            flutterTts.speak(lastWord);
-            checkForMatchingBbox();
+        if (recognizedText.isEmpty) return;
+
+        final words = recognizedText.split(" ");
+        String? target;
+
+        if (words.length >= 2) {
+          final lastTwo = "${words[words.length - 2]} ${words.last}";
+          if (labels.contains(lastTwo)) {
+            target = lastTwo;
           }
         }
+
+        if (target == null && labels.contains(words.last)) {
+          target = words.last;
+        }
+
+        if (target != null) {
+          if (recognizedWord.value != target) {
+            _clearDetectionCache();
+          }
+          recognizedWord.value = target;
+          flutterTts.speak(target);
+          checkForMatchingBbox();
+        }
       },
-      listenFor: const Duration(seconds: 10),
-      pauseFor: const Duration(seconds: 2),
+      listenFor: const Duration(seconds: 100),
+      pauseFor: const Duration(seconds: 20),
     );
 
     if (!available) {
@@ -243,15 +261,112 @@ class ScanController extends GetxController {
     final target = recognizedWord.value;
     if (target.isEmpty || detectedObjects.isEmpty) return;
 
-    final matchFound = detectedObjects.any((obj) =>
-    (obj['label'] as String).trim().toLowerCase() == target);
+    // Find the first detection that matches the target.
+    final matchingObj = detectedObjects.firstWhere(
+          (obj) => (obj['label'] as String) == target,
+      orElse: () => {},
+    );
+    if (matchingObj.isEmpty) return;
 
-    if (matchFound && await Vibration.hasVibrator() ?? false) {
-      Vibration.vibrate(duration: 500);
+    final currentBox = matchingObj['boundingBox'] as Map<String, dynamic>;
+
+    // If reference is not yet set, work on consecutive detection.
+    if (_referenceBoundingBox == null) {
+      if (_consecutiveDetectionCount == 0) {
+        // First detection in the sequence.
+        _baseBoundingBox = currentBox;
+        _consecutiveDetectionCount = 1;
+        return;
+      } else {
+        // Check if the current detection is inside the expanded area of the base bounding box.
+        if (_isInsideExpanded(currentBox, _baseBoundingBox!)) {
+          _consecutiveDetectionCount++;
+        } else {
+          // Reset the sequence if it falls outside.
+          _baseBoundingBox = currentBox;
+          _consecutiveDetectionCount = 1;
+        }
+        // On third consecutive detection, set the reference bounding box.
+        if (_consecutiveDetectionCount >= 3) {
+          _referenceBoundingBox = currentBox;
+          if (await Vibration.hasVibrator() ?? false) {
+            Vibration.vibrate(duration: 500, amplitude: 100);
+          }
+          return;
+        }
+      }
+    } else {
+      if (_isInsideExpanded(currentBox, _referenceBoundingBox!)) {
+        double currentArea = currentBox['width'] * currentBox['height'];
+        double referenceArea = _referenceBoundingBox!['width'] * _referenceBoundingBox!['height'];
+        double ratio = currentArea / referenceArea;
+
+        int duration;
+        int amplitude;
+
+        if (ratio < 0.5) {
+          duration = 100;
+          amplitude = 5;
+        } else if (ratio >= 0.5 && ratio < 1) {
+          duration = ((ratio - 0.5) * 200 + 100).round();
+          amplitude = ((ratio - 0.5) * 50).round();
+        } else if (ratio >= 1 && ratio < 2) {
+          duration = ((ratio - 1) * 2700 + 300).round();
+          amplitude = ((ratio - 1) * 205 + 50).round();
+        } else {
+          duration = 3000;
+          amplitude = 255;
+        }
+
+        duration = duration.clamp(10, 3000);
+        amplitude = amplitude.clamp(0, 255);
+
+
+        if (await Vibration.hasVibrator() ?? false) {
+          Vibration.vibrate(duration: duration, amplitude: amplitude);
+        }
+      } else {
+        // If the detection falls outside the expanded area, treat it as a new detection.
+        _referenceBoundingBox = currentBox;
+        _baseBoundingBox = currentBox;
+        _consecutiveDetectionCount = 1;
+        if (await Vibration.hasVibrator() ?? false) {
+          Vibration.vibrate(duration: 500, amplitude: 100);
+        }
+      }
     }
   }
 
+
+  bool _isInsideExpanded(Map<String, dynamic> currentBox, Map<String, dynamic> baseBox) {
+    double baseCenterX = baseBox['left'] + baseBox['width'] / 2;
+    double baseCenterY = baseBox['top'] + baseBox['height'] / 2;
+    // Expanded dimensions: double the width and height.
+    double expandedHalfWidth = baseBox['width'];
+    double expandedHalfHeight = baseBox['height'];
+    double expandedLeft = baseCenterX - expandedHalfWidth;
+    double expandedTop = baseCenterY - expandedHalfHeight;
+    double expandedRight = baseCenterX + expandedHalfWidth;
+    double expandedBottom = baseCenterY + expandedHalfHeight;
+
+    double currLeft = currentBox['left'];
+    double currTop = currentBox['top'];
+    double currRight = currLeft + currentBox['width'];
+    double currBottom = currTop + currentBox['height'];
+
+    return (currLeft >= expandedLeft &&
+        currTop >= expandedTop &&
+        currRight <= expandedRight &&
+        currBottom <= expandedBottom);
+  }
+
+  void _clearDetectionCache() {
+    _baseBoundingBox = null;
+    _referenceBoundingBox = null;
+    _consecutiveDetectionCount = 0;
+  }
   void clearTarget() {
     recognizedWord.value = "";
+    _clearDetectionCache();
   }
 }

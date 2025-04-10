@@ -1,4 +1,4 @@
-package com.example.ai_object_detector
+package com.example.oh
 
 import io.flutter.embedding.android.FlutterActivity
 

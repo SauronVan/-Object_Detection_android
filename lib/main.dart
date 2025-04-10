@@ -1,8 +1,8 @@
-import 'package:ai_object_detector/view/camera_view.dart';
-import 'package:ai_object_detector/view/detect_view..dart';
+import 'package:oh/view/camera_view.dart';
+import 'package:oh/view/detect_view..dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ai_object_detector/controller/scan_controller.dart';
+import 'package:oh/controller/scan_controller.dart';
 
 void main() {
   runApp(const MyApp());
