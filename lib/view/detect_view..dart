@@ -31,7 +31,7 @@ class _CameraViewWithVoiceState extends State<CameraViewWithVoice> {
               onCameraCreated: () {},
               boundingBoxesColorList: [Colors.red, Colors.blue, Colors.green],
             ),
-            // Process detection results and draw bounding boxes with labels
+
             Positioned.fill(
               child: StreamBuilder<List<DetectedObject?>?>(
                 stream: controller.objectDetector.detectionResultStream,
@@ -40,16 +40,16 @@ class _CameraViewWithVoiceState extends State<CameraViewWithVoice> {
                     return const SizedBox.shrink();
                   }
 
-                  // Filter objects with confidence >= 0.4
+
                   final detectedObjects = snapshot.data!
                       .where((obj) => obj != null && obj.confidence >= 0.4)
                       .cast<DetectedObject>()
                       .toList();
 
-                  // Log detected objects (optional)
+
                   log("Detected objects: ${detectedObjects.map((e) => e.label).toList()}");
 
-                  // Update controller with filtered results
+
                   controller.updateDetectedObjects(detectedObjects.map((obj) => {
                     'label': obj.label,
                     'confidence': obj.confidence,
@@ -61,7 +61,7 @@ class _CameraViewWithVoiceState extends State<CameraViewWithVoice> {
                     },
                   }).toList());
 
-                  // Draw bounding boxes and labels using CustomPaint
+
                   return CustomPaint(
                     painter: ObjectDetectorPainter(
                       detectedObjects,
@@ -71,7 +71,7 @@ class _CameraViewWithVoiceState extends State<CameraViewWithVoice> {
                 },
               ),
             ),
-            // Display recognized word and command
+
             Positioned(
               bottom: 80,
               left: 0,
