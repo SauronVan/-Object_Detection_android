@@ -28,7 +28,7 @@ Implemented from https://github.com/ultralytics/yolo-flutter-app by https://gith
 
 ## Demo
 
-![Demo](assets/att.PYL35xMcuTcMFX8VVAqb_P316Iuu5UKOPFOE1RnkqMc.jpg"Demo")
+![Demo](assets/att.PYL35xMcuTcMFX8VVAqb_P316Iuu5UKOPFOE1RnkqMc.jpg "Demo")
 
 
 ## Getting Started
