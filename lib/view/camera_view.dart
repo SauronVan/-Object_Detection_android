@@ -33,8 +33,6 @@ class CameraView extends StatelessWidget {
                   .cast<DetectedObject>()
                   .toList();
 
-              log("🎨 StreamBuilder received: ${detectedObjects.map((e) => e.label).toList()}");
-
               controller.updateDetectedObjects(detectedObjects.map((obj) => {
                 'label': obj.label,
                 'confidence': obj.confidence,

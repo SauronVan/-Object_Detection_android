@@ -39,17 +39,10 @@ class _CameraViewWithVoiceState extends State<CameraViewWithVoice> {
                   if (!snapshot.hasData || snapshot.data == null) {
                     return const SizedBox.shrink();
                   }
-
-                  // Filter objects with confidence >= 0.4
                   final detectedObjects = snapshot.data!
                       .where((obj) => obj != null && obj.confidence >= 0.4)
                       .cast<DetectedObject>()
                       .toList();
-
-                  // Log detected objects (optional)
-                  log("Detected objects: ${detectedObjects.map((e) => e.label).toList()}");
-
-                  // Update controller with filtered results
                   controller.updateDetectedObjects(detectedObjects.map((obj) => {
                     'label': obj.label,
                     'confidence': obj.confidence,
@@ -69,28 +62,6 @@ class _CameraViewWithVoiceState extends State<CameraViewWithVoice> {
                     ),
                   );
                 },
-              ),
-            ),
-            // Display recognized word and command
-            Positioned(
-              bottom: 80,
-              left: 0,
-              right: 0,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Obx(() => Text(
-                    "Target: ${controller.recognizedWord.value}",
-                    style: const TextStyle(
-                        fontSize: 20, color: Colors.white),
-                  )),
-                  const SizedBox(height: 10),
-                  Obx(() => Text(
-                    "Command: ${controller.recognizedWords.value}",
-                    style: const TextStyle(
-                        fontSize: 16, color: Colors.white),
-                  )),
-                ],
               ),
             ),
           ],
