@@ -1,8 +1,9 @@
-import 'package:oh/view/camera_view.dart';
-import 'package:oh/view/detect_view..dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:oh/controller/scan_controller.dart';
+import 'package:oh/view/camera_view.dart';
+import 'package:oh/view/detect_view..dart';
+import 'package:oh/Instruction/Instruction.dart'; // <-- NEW import
 
 void main() {
   runApp(const MyApp());
@@ -32,6 +33,34 @@ class MainMenu extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Main Menu"),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12.0), // add small padding from edge
+            child: IconButton(
+              icon: const Icon(
+                Icons.help_outline,
+                color: Colors.black,      // <-- BLACK color
+                size: 32,                 // <-- Bigger size
+              ),
+              onPressed: () {
+                Instruction.showParagraphPopup(
+                  context,
+                  paragraph: "Welcome to Oh. "
+                      "Press Find Object to locate an item. "
+                      "Say commands like find me a bottle or  "
+                      "where is the chair. Point the camera and  "
+                      "press the play button. Voice recognition will "
+                      "start.  Your phone will vibrate as you get "
+                      "closer. Or press What's Around. "
+                      "The app will describe what the camera sees. "
+                      "Press the speaker button to hear it. "
+                      "Find out what's on the left, center, or right. "
+                      "Tap the back arrow to return to the menu.",
+                );
+              },
+            ),
+          ),
+        ],
       ),
       body: Center(
         child: Column(
@@ -71,7 +100,7 @@ class MainMenu extends StatelessWidget {
                     ),
                   );
                 },
-                child: const Text("What's around"),
+                child: const Text("What's Around"),
               ),
             ),
           ],
@@ -80,6 +109,7 @@ class MainMenu extends StatelessWidget {
     );
   }
 }
+
 
 class CameraViewWithBackButton extends StatelessWidget {
   const CameraViewWithBackButton({super.key});

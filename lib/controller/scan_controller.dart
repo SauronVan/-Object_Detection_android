@@ -17,8 +17,10 @@ class ScanController extends GetxController {
   late FlutterTts flutterTts;
   late ObjectDetector objectDetector;
 
+  // Frame counter for sampling every 10 frames.
   int frameCount = 0;
 
+  // Observable states.
   final isCameraInitialized = false.obs;
   final recognizedWord = "".obs;
   final recognizedWords = "".obs;
@@ -27,13 +29,16 @@ class ScanController extends GetxController {
   final isSpeechInitialized = false.obs;
   final isRecording = false.obs;
 
+  // Model asset paths and formats.
   late final String modelFilePath;
   late final Format modelFormat;
   final String metadataFilePath = 'assets/metadata.yaml';
   final String labelsFilePath = 'assets/labels.txt';
+
+  // Variables to track detection state.
   int _consecutiveDetectionCount = 0;
-  Map<String, dynamic>? _baseBoundingBox;
-  Map<String, dynamic>? _referenceBoundingBox;
+  Map<String, dynamic>? _baseBoundingBox;      // Bounding box from the first detection in a sequence.
+  Map<String, dynamic>? _referenceBoundingBox;   // Set at the third consecutive detection.
 
   @override
   void onInit() {
@@ -166,6 +171,7 @@ class ScanController extends GetxController {
       bool initialized = await speech.initialize(
         onStatus: (status) {
           if (status == 'done' || status == 'notListening') {
+            // Optionally restart listening.
           }
         },
         onError: (error) {
@@ -198,7 +204,6 @@ class ScanController extends GetxController {
 
         final words = recognizedText.split(" ");
         String? target;
-
         if (words.length >= 3) {
           final lastThree = "${words[words.length - 3]} ${words[words.length - 2]} ${words.last}";
           if (labels.contains(lastThree)) {
@@ -206,7 +211,7 @@ class ScanController extends GetxController {
           }
         }
 
-        if (target == null && words.length >= 2) {
+        if (words.length >= 2) {
           final lastTwo = "${words[words.length - 2]} ${words.last}";
           if (labels.contains(lastTwo)) {
             target = lastTwo;
@@ -217,13 +222,12 @@ class ScanController extends GetxController {
           target = words.last;
         }
 
-
         if (target != null) {
           if (recognizedWord.value != target) {
             _clearDetectionCache();
+            recognizedWord.value = target;
+            flutterTts.speak(target);
           }
-          recognizedWord.value = target;
-          flutterTts.speak(target);
           checkForMatchingBbox();
         }
       },
@@ -263,6 +267,7 @@ class ScanController extends GetxController {
     final target = recognizedWord.value;
     if (target.isEmpty || detectedObjects.isEmpty) return;
 
+    // Find the first detection that matches the target.
     final matchingObj = detectedObjects.firstWhere(
           (obj) => (obj['label'] as String) == target,
       orElse: () => {},
@@ -270,18 +275,24 @@ class ScanController extends GetxController {
     if (matchingObj.isEmpty) return;
 
     final currentBox = matchingObj['boundingBox'] as Map<String, dynamic>;
+
+    // If reference is not yet set, work on consecutive detection.
     if (_referenceBoundingBox == null) {
       if (_consecutiveDetectionCount == 0) {
+        // First detection in the sequence.
         _baseBoundingBox = currentBox;
         _consecutiveDetectionCount = 1;
         return;
       } else {
+        // Check if the current detection is inside the expanded area of the base bounding box.
         if (_isInsideExpanded(currentBox, _baseBoundingBox!)) {
           _consecutiveDetectionCount++;
         } else {
+          // Reset the sequence if it falls outside.
           _baseBoundingBox = currentBox;
           _consecutiveDetectionCount = 1;
         }
+        // On third consecutive detection, set the reference bounding box.
         if (_consecutiveDetectionCount >= 3) {
           _referenceBoundingBox = currentBox;
           if (await Vibration.hasVibrator() ?? false) {
@@ -301,7 +312,7 @@ class ScanController extends GetxController {
 
         if (ratio < 0.5) {
           duration = 100;
-          amplitude = 20;
+          amplitude = 5;
         } else if (ratio >= 0.5 && ratio < 1) {
           duration = ((ratio - 0.5) * 200 + 100).round();
           amplitude = ((ratio - 0.5) * 50).round();
@@ -314,13 +325,14 @@ class ScanController extends GetxController {
         }
 
         duration = duration.clamp(10, 3000);
-        amplitude = amplitude.clamp(20, 255);
+        amplitude = amplitude.clamp(0, 255);
 
 
         if (await Vibration.hasVibrator() ?? false) {
           Vibration.vibrate(duration: duration, amplitude: amplitude);
         }
       } else {
+        // If the detection falls outside the expanded area, treat it as a new detection.
         _referenceBoundingBox = currentBox;
         _baseBoundingBox = currentBox;
         _consecutiveDetectionCount = 1;
@@ -335,6 +347,7 @@ class ScanController extends GetxController {
   bool _isInsideExpanded(Map<String, dynamic> currentBox, Map<String, dynamic> baseBox) {
     double baseCenterX = baseBox['left'] + baseBox['width'] / 2;
     double baseCenterY = baseBox['top'] + baseBox['height'] / 2;
+    // Expanded dimensions: double the width and height.
     double expandedHalfWidth = baseBox['width'];
     double expandedHalfHeight = baseBox['height'];
     double expandedLeft = baseCenterX - expandedHalfWidth;

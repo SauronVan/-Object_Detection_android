@@ -1,8 +1,9 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:oh/controller/scan_controller.dart';
 import 'package:ultralytics_yolo/ultralytics_yolo.dart';
-import 'dart:developer';
 
 class CameraViewWithVoice extends StatefulWidget {
   const CameraViewWithVoice({Key? key}) : super(key: key);
@@ -12,69 +13,94 @@ class CameraViewWithVoice extends StatefulWidget {
 }
 
 class _CameraViewWithVoiceState extends State<CameraViewWithVoice> {
+  final ScanController controller = Get.put(ScanController());
+
   bool _isSpeaking = false;
+  bool _isDetecting = false; // ← only true during our one‐shot
 
   @override
   Widget build(BuildContext context) {
-    final ScanController controller = Get.put(ScanController());
-
     return Scaffold(
       body: Obx(() {
         if (!controller.isCameraInitialized.value) {
           return const Center(child: Text("Loading Preview..."));
         }
+
         return Stack(
           children: [
+            // 1) Always show the raw camera preview
             UltralyticsYoloCameraPreview(
               controller: controller.cameraController,
-              predictor: controller.objectDetector,
+              // 2) Only attach the predictor when we want inference
+              predictor: _isDetecting ? controller.objectDetector : null,
               onCameraCreated: () {},
               boundingBoxesColorList: [Colors.red, Colors.blue, Colors.green],
             ),
-            // Process detection results and draw bounding boxes with labels
-            Positioned.fill(
-              child: StreamBuilder<List<DetectedObject?>?>(
-                stream: controller.objectDetector.detectionResultStream,
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData || snapshot.data == null) {
-                    return const SizedBox.shrink();
-                  }
-                  final detectedObjects = snapshot.data!
-                      .where((obj) => obj != null && obj.confidence >= 0.4)
-                      .cast<DetectedObject>()
-                      .toList();
-                  controller.updateDetectedObjects(detectedObjects.map((obj) => {
-                    'label': obj.label,
-                    'confidence': obj.confidence,
-                    'boundingBox': {
-                      'left': obj.boundingBox.left,
-                      'top': obj.boundingBox.top,
-                      'width': obj.boundingBox.width,
-                      'height': obj.boundingBox.height,
-                    },
-                  }).toList());
 
-                  // Draw bounding boxes and labels using CustomPaint
-                  return CustomPaint(
-                    painter: ObjectDetectorPainter(
-                      detectedObjects,
-                      [Colors.red, Colors.blue, Colors.green],
-                    ),
-                  );
-                },
+            // 3) Only overlay detection results while _isDetecting == true
+            if (_isDetecting)
+              Positioned.fill(
+                child: StreamBuilder<List<DetectedObject?>?>(
+                  stream: controller.objectDetector.detectionResultStream,
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData || snapshot.data == null) {
+                      return const SizedBox.shrink();
+                    }
+
+                    final detected = snapshot.data!
+                        .where((d) => d != null && d.confidence >= 0.4)
+                        .cast<DetectedObject>()
+                        .toList();
+
+                    log("Detected objects: ${detected.map((e) => e.label).toList()}");
+
+                    controller.updateDetectedObjects(
+                      detected.map((obj) => {
+                        'label': obj.label,
+                        'confidence': obj.confidence,
+                        'boundingBox': {
+                          'left': obj.boundingBox.left,
+                          'top': obj.boundingBox.top,
+                          'width': obj.boundingBox.width,
+                          'height': obj.boundingBox.height,
+                        },
+                      }).toList(),
+                    );
+
+                    return CustomPaint(
+                      painter: ObjectDetectorPainter(
+                        detected,
+                        [Colors.red, Colors.blue, Colors.green],
+                      ),
+                    );
+                  },
+                ),
               ),
-            ),
           ],
         );
       }),
+
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.volume_up),
-        onPressed: () => _speakObjects(controller),
+        onPressed: () async {
+          // 1) Flip on detection
+          setState(() => _isDetecting = true);
+
+          // 2) Give the preview a moment to push one inference through
+          await Future.delayed(const Duration(milliseconds: 300));
+
+          // 3) Speak based on whatever was detected
+          await _speakObjects(controller);
+
+          // 4) Turn inference off, clear any stale boxes
+          setState(() => _isDetecting = false);
+          controller.updateDetectedObjects([]);
+        },
       ),
     );
   }
 
-  void _speakObjects(ScanController controller) async {
+  Future<void> _speakObjects(ScanController controller) async {
     if (_isSpeaking) {
       await controller.flutterTts.stop();
       _isSpeaking = false;
@@ -90,73 +116,57 @@ class _CameraViewWithVoiceState extends State<CameraViewWithVoice> {
       "right": {},
     };
 
-
     for (var obj in controller.detectedObjects) {
-      if (obj['boundingBox'] == null) continue;
+      final bbox = obj['boundingBox'] as Map<String, double>?;
+      if (bbox == null) continue;
 
-      final bbox = obj['boundingBox'];
-      final left = bbox['left'];
-      final width = bbox['width'];
+      final left = bbox['left']!;
+      final width = bbox['width']!;
       final right = left + width;
-      String label = obj['label'];
+      final label = obj['label'] as String;
 
       String region;
       if (left < leftBoundary && right > rightBoundary) {
         region = "middle";
       } else {
-        double leftPortion = (right < leftBoundary)
+        final leftPortion = (right < leftBoundary)
             ? 1.0
             : (left < leftBoundary)
             ? (leftBoundary - left) / width
             : 0.0;
-
-        double rightPortion = (left > rightBoundary)
+        final rightPortion = (left > rightBoundary)
             ? 1.0
             : (right > rightBoundary)
             ? (right - rightBoundary) / width
             : 0.0;
-
-        double middlePortion = 1.0 - (leftPortion + rightPortion);
+        final middlePortion = 1.0 - (leftPortion + rightPortion);
 
         if (leftPortion >= middlePortion && leftPortion >= rightPortion) {
           region = "left";
-        } else if (rightPortion >= leftPortion &&
-            rightPortion >= middlePortion) {
+        } else if (rightPortion >= leftPortion && rightPortion >= middlePortion) {
           region = "right";
         } else {
           region = "middle";
         }
       }
 
-      if (regionObjects[region]!.containsKey(label)) {
-        regionObjects[region]![label] = regionObjects[region]![label]! + 1;
-      } else {
-        regionObjects[region]![label] = 1;
-      }
+      regionObjects[region]!
+          .update(label, (count) => count + 1, ifAbsent: () => 1);
     }
 
-    List<String> speechParts = [];
+    final speechParts = <String>[];
 
-    regionObjects.forEach((region, objects) {
-      if (objects.isNotEmpty) {
-        List<String> objectDescriptions = [];
-        objects.forEach((label, count) {
-          if (count == 1) {
-            objectDescriptions.add("1 $label");
-          } else {
-            objectDescriptions.add("$count ${label}s");
-          }
-        });
-        String regionText = "";
-        if (region == "left") {
-          regionText = "on the left";
-        } else if (region == "middle") {
-          regionText = "in the middle";
-        } else if (region == "right") {
-          regionText = "on the right";
-        }
-        speechParts.add("${objectDescriptions.join(', ')} $regionText");
-      }
+    regionObjects.forEach((region, objs) {
+      if (objs.isEmpty) return;
+      final descs = objs.entries
+          .map((e) => e.value == 1 ? "1 ${e.key}" : "${e.value} ${e.key}s")
+          .join(', ');
+      final regionText = {
+        "left": "on the left",
+        "middle": "in the middle",
+        "right": "on the right",
+      }[region]!;
+      speechParts.add("$descs $regionText");
     });
 
     if (speechParts.isEmpty) {
@@ -164,11 +174,9 @@ class _CameraViewWithVoiceState extends State<CameraViewWithVoice> {
       return;
     }
 
-    final speechText = speechParts.join(". ");
     _isSpeaking = true;
-
-    await controller.flutterTts.speak(speechText).then((_) {
-      _isSpeaking = false;
-    });
+    await controller.flutterTts
+        .speak(speechParts.join(". "))
+        .then((_) => _isSpeaking = false);
   }
 }
