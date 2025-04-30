@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:oh/controller/scan_controller.dart';
 import 'package:oh/view/camera_view.dart';
 import 'package:oh/view/detect_view..dart';
-import 'package:oh/Instruction/Instruction.dart'; // <-- NEW import
+import 'package:oh/Instruction/Instruction.dart';
+import 'package:oh/Instruction/termsandcondition.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,15 +14,31 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  Future<bool> _hasAcceptedTerms() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('accepted_terms') ?? false;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
-      title: 'AI Object Detection',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const MainMenu(),
+    return FutureBuilder<bool>(
+      future: _hasAcceptedTerms(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const MaterialApp(
+            home: Scaffold(body: Center(child: CircularProgressIndicator())),
+          );
+        }
+
+        return GetMaterialApp(
+          title: 'AI Object Detection',
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+            useMaterial3: true,
+          ),
+          home: snapshot.data! ? const MainMenu() : const TermsPage(),
+        );
+      },
     );
   }
 }
@@ -32,15 +50,15 @@ class MainMenu extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Main Menu"),
+        title: const Text("Màn Hình Chính"),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 12.0), // add small padding from edge
+            padding: const EdgeInsets.only(right: 12.0),
             child: IconButton(
               icon: const Icon(
                 Icons.help_outline,
-                color: Colors.black,      // <-- BLACK color
-                size: 32,                 // <-- Bigger size
+                color: Colors.black,
+                size: 40,
               ),
               onPressed: () {
                 Instruction.showParagraphPopup(
@@ -109,7 +127,6 @@ class MainMenu extends StatelessWidget {
     );
   }
 }
-
 
 class CameraViewWithBackButton extends StatelessWidget {
   const CameraViewWithBackButton({super.key});

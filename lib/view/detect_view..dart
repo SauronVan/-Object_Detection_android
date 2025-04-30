@@ -16,7 +16,7 @@ class _CameraViewWithVoiceState extends State<CameraViewWithVoice> {
   final ScanController controller = Get.put(ScanController());
 
   bool _isSpeaking = false;
-  bool _isDetecting = false; // ← only true during our one‐shot
+  bool _isDetecting = false;
 
   @override
   Widget build(BuildContext context) {
@@ -28,16 +28,12 @@ class _CameraViewWithVoiceState extends State<CameraViewWithVoice> {
 
         return Stack(
           children: [
-            // 1) Always show the raw camera preview
             UltralyticsYoloCameraPreview(
               controller: controller.cameraController,
-              // 2) Only attach the predictor when we want inference
               predictor: _isDetecting ? controller.objectDetector : null,
               onCameraCreated: () {},
               boundingBoxesColorList: [Colors.red, Colors.blue, Colors.green],
             ),
-
-            // 3) Only overlay detection results while _isDetecting == true
             if (_isDetecting)
               Positioned.fill(
                 child: StreamBuilder<List<DetectedObject?>?>(
@@ -83,16 +79,37 @@ class _CameraViewWithVoiceState extends State<CameraViewWithVoice> {
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.volume_up),
         onPressed: () async {
-          // 1) Flip on detection
+          // Clear previous state
+          controller.clearTarget();
+          controller.updateDetectedObjects([]);
+          if (_isSpeaking) {
+            await controller.flutterTts.stop();
+            _isSpeaking = false;
+          }
           setState(() => _isDetecting = true);
+          await Future.delayed(const Duration(milliseconds: 500));
+          final rawDetection = await controller.objectDetector.detectionResultStream
+              .firstWhere((list) => list != null && list.isNotEmpty);
+          final detection = rawDetection!;
+          final filtered = detection
+              .where((obj) => obj != null && obj.confidence >= 0.3)
+              .cast<DetectedObject>()
+              .toList();
+          controller.updateDetectedObjects(
+            filtered.map((obj) => {
+              'label': obj.label,
+              'confidence': obj.confidence,
+              'boundingBox': {
+                'left': obj.boundingBox.left,
+                'top': obj.boundingBox.top,
+                'width': obj.boundingBox.width,
+                'height': obj.boundingBox.height,
+              },
+            }).toList(),
+          );
 
-          // 2) Give the preview a moment to push one inference through
-          await Future.delayed(const Duration(milliseconds: 300));
-
-          // 3) Speak based on whatever was detected
           await _speakObjects(controller);
 
-          // 4) Turn inference off, clear any stale boxes
           setState(() => _isDetecting = false);
           controller.updateDetectedObjects([]);
         },
@@ -166,7 +183,7 @@ class _CameraViewWithVoiceState extends State<CameraViewWithVoice> {
         "middle": "in the middle",
         "right": "on the right",
       }[region]!;
-      speechParts.add("$descs $regionText");
+      speechParts.add("${descs} ${regionText}");
     });
 
     if (speechParts.isEmpty) {
@@ -176,7 +193,7 @@ class _CameraViewWithVoiceState extends State<CameraViewWithVoice> {
 
     _isSpeaking = true;
     await controller.flutterTts
-        .speak(speechParts.join(". "))
+        .speak(speechParts.join('. '))
         .then((_) => _isSpeaking = false);
   }
 }

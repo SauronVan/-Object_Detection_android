@@ -2,15 +2,38 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:oh/controller/scan_controller.dart';
 import 'package:ultralytics_yolo/ultralytics_yolo.dart';
-import 'dart:developer';
 
-class CameraView extends StatelessWidget {
+class CameraView extends StatefulWidget {
   const CameraView({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final controller = Get.put(ScanController());
+  State<CameraView> createState() => _CameraViewState();
+}
 
+class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
+  final controller = Get.put(ScanController());
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      controller.clearTarget();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       body: Obx(() => controller.isCameraInitialized.value
           ? Stack(
@@ -32,9 +55,6 @@ class CameraView extends StatelessWidget {
                   .where((obj) => obj != null && obj.confidence >= 0.4)
                   .cast<DetectedObject>()
                   .toList();
-
-              log("🎨 StreamBuilder received: ${detectedObjects.map((e) => e.label).toList()}");
-
               controller.updateDetectedObjects(detectedObjects.map((obj) => {
                 'label': obj.label,
                 'confidence': obj.confidence,
@@ -99,7 +119,7 @@ class CameraView extends StatelessWidget {
                         size: 40,
                       ),
                       onPressed: () {
-                        controller.recognizedWord.value = "";
+                        controller.clearTarget();
                       },
                     ),
                   ],

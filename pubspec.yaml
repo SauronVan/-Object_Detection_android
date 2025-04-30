@@ -44,6 +44,7 @@ dependencies:
   flutter_tts: ^4.2.2
   ultralytics_yolo: ^0.0.3
   path_provider: ^2.1.4
+  shared_preferences: ^2.5.3
 
 
 dev_dependencies:
