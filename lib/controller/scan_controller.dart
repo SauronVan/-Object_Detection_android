@@ -180,6 +180,9 @@ class ScanController extends GetxController {
 
   void initTextToSpeech() {
     flutterTts = FlutterTts();
+    flutterTts.setLanguage("vi-VN");
+    flutterTts.setSpeechRate(0.5);
+    flutterTts.setPitch(1.0);
   }
 
   Future<void> startListening() async {
