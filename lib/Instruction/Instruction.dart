@@ -33,7 +33,7 @@ class _ParagraphPopupState extends State<_ParagraphPopup> {
   }
 
   Future<void> _startSpeaking() async {
-    await flutterTts.setLanguage("en-US");
+    await flutterTts.setLanguage("vi-VN");
     await flutterTts.setSpeechRate(0.5);
     await flutterTts.speak(widget.paragraph);
   }

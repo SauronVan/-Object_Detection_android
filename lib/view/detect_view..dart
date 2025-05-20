@@ -1,4 +1,3 @@
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -48,8 +47,6 @@ class _CameraViewWithVoiceState extends State<CameraViewWithVoice> {
                         .cast<DetectedObject>()
                         .toList();
 
-                    log("Detected objects: ${detected.map((e) => e.label).toList()}");
-
                     controller.updateDetectedObjects(
                       detected.map((obj) => {
                         'label': obj.label,
@@ -75,7 +72,6 @@ class _CameraViewWithVoiceState extends State<CameraViewWithVoice> {
           ],
         );
       }),
-
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.volume_up),
         onPressed: () async {
@@ -179,15 +175,15 @@ class _CameraViewWithVoiceState extends State<CameraViewWithVoice> {
           .map((e) => e.value == 1 ? "1 ${e.key}" : "${e.value} ${e.key}s")
           .join(', ');
       final regionText = {
-        "left": "on the left",
-        "middle": "in the middle",
-        "right": "on the right",
+        "left": "ở bên trái",
+        "middle": "ở giữa",
+        "right": "ở bên phải",
       }[region]!;
       speechParts.add("${descs} ${regionText}");
     });
 
     if (speechParts.isEmpty) {
-      await controller.flutterTts.speak("No objects detected.");
+      await controller.flutterTts.speak("Không nhận dạng được vật nào");
       return;
     }
 

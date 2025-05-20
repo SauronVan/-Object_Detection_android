@@ -1,80 +1,58 @@
-person
-bicycle
-car
-motorbike
-aeroplane
-bus
-train
-truck
-boat
-traffic light
-fire hydrant
-stop sign
-parking meter
-bench
-bird
-cat
-dog
-horse
-sheep
-cow
-elephant
-bear
-zebra
-giraffe
-backpack
-umbrella
-handbag
-tie
-suitcase
-frisbee
-skis
-snowboard
-sports ball
-kite
-baseball bat
-baseball glove
-skateboard
-surfboard
-tennis racket
-bottle
-wine glass
-cup
-fork
-knife
-spoon
-bowl
-banana
-apple
-sandwich
-orange
-broccoli
-carrot
-hot dog
-pizza
-donut
-cake
-chair
-sofa
-pottedplant
-bed
-diningtable
-toilet
-tvmonitor
+người
+xe đạp
+xe hơi
+xe máy
+xe buýt
+tàu hỏa
+xe tải
+thuyền
+ghế dài
+chim
+mèo
+chó
+ba lô
+dù
+túi xách
+cà vạt
+vali
+diều
+chai
+ghế
+ghế sofa
+chậu cây
+giường
+bàn
+bồn cầu
+tivi
 laptop
-mouse
-remote
-keyboard
-cell phone
-microwave
-oven
-toaster
-sink
-refrigerator
-book
-clock
-vase
-scissors
-teddy bear
-hair drier
-toothbrush
+chuột máy tính
+điều khiển
+bàn phím
+điện thoại
+lò vi sóng
+lò nướng
+máy nướng bánh
+bồn rửa
+tủ lạnh
+sách
+đồng hồ
+lọ hoa
+kéo
+bàn chải
+chén
+muỗng
+nĩa
+ly
+dao
+cầu thang
+hồ bơi
+quạt máy
+vòi sen
+tay nắm cửa
+kệ sách
+bút
+rắn
+tủ quần áo
+bàn cà phê
+chìa khóa
+ví

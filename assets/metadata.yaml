@@ -1,92 +1,78 @@
-description: Ultralytics YOLOv8n model trained on coco.yaml
+description: Ultralytics 58vnbest model trained on /kaggle/working/data/metadata1.yaml
 author: Ultralytics
-license: AGPL-3.0 https://ultralytics.com/license
-date: "2023-11-30T10:16:15.604065"
-version: 8.0.215
+date: '2025-04-24T03:20:00.503365'
+version: 8.3.115
+license: AGPL-3.0 License (https://ultralytics.com/license)
+docs: https://docs.ultralytics.com
 stride: 32
 task: detect
 batch: 1
 imgsz:
-  - 320
-  - 320
+- 320
+- 320
 names:
-  0: person
-  1: bicycle
-  2: car
-  3: motorcycle
-  4: airplane
-  5: bus
-  6: train
-  7: truck
-  8: boat
-  9: traffic light
-  10: fire hydrant
-  11: stop sign
-  12: parking meter
-  13: bench
-  14: bird
-  15: cat
-  16: dog
-  17: horse
-  18: sheep
-  19: cow
-  20: elephant
-  21: bear
-  22: zebra
-  23: giraffe
-  24: backpack
-  25: umbrella
-  26: handbag
-  27: tie
-  28: suitcase
-  29: frisbee
-  30: skis
-  31: snowboard
-  32: sports ball
-  33: kite
-  34: baseball bat
-  35: baseball glove
-  36: skateboard
-  37: surfboard
-  38: tennis racket
-  39: bottle
-  40: wine glass
-  41: cup
-  42: fork
-  43: knife
-  44: spoon
-  45: bowl
-  46: banana
-  47: apple
-  48: sandwich
-  49: orange
-  50: broccoli
-  51: carrot
-  52: hot dog
-  53: pizza
-  54: donut
-  55: cake
-  56: chair
-  57: couch
-  58: potted plant
-  59: bed
-  60: dining table
-  61: toilet
-  62: tv
-  63: laptop
-  64: mouse
-  65: remote
-  66: keyboard
-  67: cell phone
-  68: microwave
-  69: oven
-  70: toaster
-  71: sink
-  72: refrigerator
-  73: book
-  74: clock
-  75: vase
-  76: scissors
-  77: teddy bear
-  78: hair drier
-  79: toothbrush
+  0: người
+  1: xe đạp
+  2: xe hơi
+  3: xe máy
+  4: xe buýt
+  5: tàu hỏa
+  6: xe tải
+  7: thuyền
+  8: ghế dài
+  9: chim
+  10: mèo
+  11: chó
+  12: ba lô
+  13: dù
+  14: túi xách
+  15: cà vạt
+  16: vali
+  17: diều
+  18: chai
+  19: ghế
+  20: ghế sofa
+  21: chậu cây
+  22: giường
+  23: bàn ăn
+  24: bồn cầu
+  25: tivi
+  26: laptop
+  27: chuột máy tính
+  28: điều khiển
+  29: bàn phím
+  30: điện thoại
+  31: lò vi sóng
+  32: lò nướng
+  33: máy nướng bánh
+  34: bồn rửa
+  35: tủ lạnh
+  36: sách
+  37: đồng hồ
+  38: lọ hoa
+  39: kéo
+  40: bàn chải
+  41: chén
+  42: muỗng
+  43: nĩa
+  44: ly
+  45: dao
+  46: cầu thang
+  47: hồ bơi
+  48: quạt máy
+  49: vòi sen
+  50: tay nắm cửa
+  51: kệ sách
+  52: bút
+  53: rắn
+  54: tủ quần áo
+  55: bàn cà phê
+  56: chìa khóa
+  57: ví
+args:
+  batch: 1
+  fraction: 1.0
+  half: false
+  int8: true
+  nms: false
+channels: 3

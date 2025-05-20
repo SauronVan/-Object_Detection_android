@@ -81,12 +81,12 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
             child: Column(
               children: [
                 Obx(() => Text(
-                  "Target: ${controller.recognizedWord.value}",
+                  "Mục tiêu: ${controller.recognizedWord.value}",
                   style: const TextStyle(fontSize: 20, color: Colors.white),
                 )),
                 const SizedBox(height: 10),
                 Obx(() => Text(
-                  "Command: ${controller.recognizedWords.value}",
+                  "Lệnh: ${controller.recognizedWords.value}",
                   style: const TextStyle(fontSize: 16, color: Colors.white),
                 )),
                 const SizedBox(height: 20),

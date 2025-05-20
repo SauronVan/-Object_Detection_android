@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:oh/controller/scan_controller.dart';
 import 'package:oh/view/camera_view.dart';
 import 'package:oh/view/detect_view..dart';
 import 'package:oh/Instruction/Instruction.dart';
 import 'package:oh/Instruction/termsandcondition.dart';
+import 'package:oh/Instruction/Supported_class.dart';
 
 void main() {
   runApp(const MyApp());
@@ -43,8 +45,37 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MainMenu extends StatelessWidget {
+class MainMenu extends StatefulWidget {
   const MainMenu({super.key});
+
+  @override
+  State<MainMenu> createState() => _MainMenuState();
+}
+
+class _MainMenuState extends State<MainMenu> {
+  final FlutterTts flutterTts = FlutterTts();
+
+  void _showSupportedClasses() async {
+    List<String> classes = await SupportedClass.loadLabels();
+
+    String textToSpeak = "Nhóm đối tượng hỗ trợ: \n" + classes.join(", ");
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Center(
+        child: _SupportedClassPopup(
+          paragraph: textToSpeak,
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    flutterTts.stop();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,27 +84,29 @@ class MainMenu extends StatelessWidget {
         title: const Text("Màn Hình Chính"),
         actions: [
           Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: IconButton(
+              icon: const Icon(Icons.category, color: Colors.black, size: 30),
+              tooltip: 'Supported Classes',
+              onPressed: _showSupportedClasses,
+            ),
+          ),
+          Padding(
             padding: const EdgeInsets.only(right: 12.0),
             child: IconButton(
-              icon: const Icon(
-                Icons.help_outline,
-                color: Colors.black,
-                size: 40,
-              ),
+              icon: const Icon(Icons.help_outline, color: Colors.black, size: 40),
               onPressed: () {
                 Instruction.showParagraphPopup(
                   context,
-                  paragraph: "Welcome to Oh. "
-                      "Press Find Object to locate an item. "
-                      "Say commands like find me a bottle or  "
-                      "where is the chair. Point the camera and  "
-                      "press the play button. Voice recognition will "
-                      "start.  Your phone will vibrate as you get "
-                      "closer. Or press What's Around. "
-                      "The app will describe what the camera sees. "
-                      "Press the speaker button to hear it. "
-                      "Find out what's on the left, center, or right. "
-                      "Tap the back arrow to return to the menu.",
+                  paragraph: "Hướng dẫn sử dụng: \n\n"
+                      "Nhấn Tìm Vật để tìm một vật thể. "
+                      "Nhận dạng giọng nói sẽ bắt đầu. "
+                      "Hỏi những câu như tìm chai nước hoặc hãy chỉ tôi chỗ cái ghế  "
+                      "Xoay camera xung quanh để bắt đầu nhận dạng. "
+                      "Điện thoại sẽ rung khi tìm thấy vật và sẽ rung mạnh hơn khi đến gần vật. "
+                      "Bạn cũng có thể chọn tính năng Xung Quanh để mô tả những gì camera nhìn thấy. "
+                      "Nhấn biểu tượng loa để nghe mô tả môi trường qua trái, giữa hoặc phải. "
+                      "Nhấn nút quay lại để trở về màn hình chính.",
                 );
               },
             ),
@@ -88,18 +121,14 @@ class MainMenu extends StatelessWidget {
               width: 500,
               height: 100,
               child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  textStyle: const TextStyle(fontSize: 28),
-                ),
+                style: ElevatedButton.styleFrom(textStyle: const TextStyle(fontSize: 28)),
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => const CameraViewWithBackButton(),
-                    ),
+                    MaterialPageRoute(builder: (context) => const CameraViewWithBackButton()),
                   );
                 },
-                child: const Text("Find Object"),
+                child: const Text("Tìm vật thể"),
               ),
             ),
             const SizedBox(height: 40),
@@ -107,18 +136,14 @@ class MainMenu extends StatelessWidget {
               width: 500,
               height: 100,
               child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  textStyle: const TextStyle(fontSize: 28),
-                ),
+                style: ElevatedButton.styleFrom(textStyle: const TextStyle(fontSize: 28)),
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => const CameraDetectWithBackButton(),
-                    ),
+                    MaterialPageRoute(builder: (context) => const CameraDetectWithBackButton()),
                   );
                 },
-                child: const Text("What's Around"),
+                child: const Text("Mô tả xung quanh"),
               ),
             ),
           ],
@@ -179,6 +204,79 @@ class CameraDetectWithBackButton extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _SupportedClassPopup extends StatefulWidget {
+  final String paragraph;
+
+  const _SupportedClassPopup({Key? key, required this.paragraph}) : super(key: key);
+
+  @override
+  State<_SupportedClassPopup> createState() => _SupportedClassPopupState();
+}
+
+class _SupportedClassPopupState extends State<_SupportedClassPopup> {
+  late FlutterTts flutterTts;
+
+  @override
+  void initState() {
+    super.initState();
+    flutterTts = FlutterTts();
+    _speak();
+  }
+
+  Future<void> _speak() async {
+    await flutterTts.setLanguage("vi-VN");
+    await flutterTts.setSpeechRate(0.5);
+    await flutterTts.speak(widget.paragraph);
+  }
+
+  Future<void> _stopSpeaking() async {
+    await flutterTts.stop();
+  }
+
+  @override
+  void dispose() {
+    _stopSpeaking();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxHeight: 400, maxWidth: 350),
+        child: Column(
+          children: [
+            Align(
+              alignment: Alignment.topRight,
+              child: IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () async {
+                  await _stopSpeaking();
+                  Navigator.of(context).pop();
+                },
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: SingleChildScrollView(
+                  child: Text(
+                    widget.paragraph.replaceAll(",", "\n"),
+                    style: const TextStyle(fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
       ),
     );
   }

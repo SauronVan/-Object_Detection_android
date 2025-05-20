@@ -81,7 +81,6 @@ class ScanController extends GetxController {
 
     try {
       final modelPath = await _copyAssetToFile(modelFilePath);
-      Get.log("Model copied to: $modelPath");
 
       String? metadataPath;
       metadataPath = await _copyAssetToFile(metadataFilePath);
@@ -124,7 +123,6 @@ class ScanController extends GetxController {
           ),
         );
       } catch (e) {
-        Get.log('Error copying asset $assetPath: $e');
         rethrow;
       }
     }
@@ -157,7 +155,6 @@ class ScanController extends GetxController {
         }
       },
       onError: (error) {
-        Get.log('Detection stream error: $error');
       },
     );
   }
@@ -192,7 +189,10 @@ class ScanController extends GetxController {
     }
     if (speech.isListening) return;
 
+    const vietnameseLocaleId = 'vi_VN';
+
     bool available = await speech.listen(
+      localeId: vietnameseLocaleId,
       onResult: (result) {
         final recognizedText = result.recognizedWords.trim().toLowerCase();
         recognizedWords.value = recognizedText;
@@ -236,6 +236,7 @@ class ScanController extends GetxController {
     }
   }
 
+
   void stopListening() {
     speech.stop();
   }
@@ -250,7 +251,6 @@ class ScanController extends GetxController {
           .toList();
       labels.assignAll(labelList);
     } catch (e) {
-      Get.log('Error loading labels: $e');
     }
   }
 
@@ -273,7 +273,6 @@ class ScanController extends GetxController {
 
     if (_referenceBoundingBox == null) {
       if (_consecutiveDetectionCount == 0) {
-        // First detection in the sequence.
         _baseBoundingBox = currentBox;
         _consecutiveDetectionCount = 1;
         return;
@@ -341,7 +340,6 @@ class ScanController extends GetxController {
   bool _isInsideExpanded(Map<String, dynamic> currentBox, Map<String, dynamic> baseBox) {
     double baseCenterX = baseBox['left'] + baseBox['width'] / 2;
     double baseCenterY = baseBox['top'] + baseBox['height'] / 2;
-    // Expanded dimensions: double the width and height.
     double expandedHalfWidth = baseBox['width'];
     double expandedHalfHeight = baseBox['height'];
     double expandedLeft = baseCenterX - expandedHalfWidth;
