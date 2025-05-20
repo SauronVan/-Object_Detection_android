@@ -235,7 +235,10 @@ class ScanController extends GetxController {
     );
 
     if (!available) {
+      isSpeechInitialized.value = false;
       Future.delayed(const Duration(seconds: 1), startListening);
+    } else {
+      isSpeechInitialized.value = true;
     }
   }
 
