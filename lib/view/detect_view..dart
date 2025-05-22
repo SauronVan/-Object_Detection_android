@@ -172,7 +172,7 @@ class _CameraViewWithVoiceState extends State<CameraViewWithVoice> {
     regionObjects.forEach((region, objs) {
       if (objs.isEmpty) return;
       final descs = objs.entries
-          .map((e) => e.value == 1 ? "1 ${e.key}" : "${e.value} ${e.key}s")
+          .map((e) => e.value == 1 ? "1 ${e.key}" : "${e.value} ${e.key}")
           .join(', ');
       final regionText = {
         "left": "ở bên trái",

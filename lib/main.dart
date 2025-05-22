@@ -56,7 +56,7 @@ class _MainMenuState extends State<MainMenu> {
   final FlutterTts flutterTts = FlutterTts();
 
   void _showSupportedClasses() async {
-    List<String> classes = await SupportedClass.loadLabels();
+    List<String> classes = SupportedClass.labels;
 
     String textToSpeak = "Nhóm đối tượng hỗ trợ: \n" + classes.join(", ");
 
@@ -101,7 +101,7 @@ class _MainMenuState extends State<MainMenu> {
                   paragraph: "Hướng dẫn sử dụng: \n\n"
                       "Nhấn Tìm Vật để tìm một vật thể. "
                       "Nhận dạng giọng nói sẽ bắt đầu. "
-                      "Hỏi những câu như tìm chai nước hoặc hãy chỉ tôi chỗ cái ghế  "
+                      "Hỏi những câu như tìm chai nước hoặc hãy chỉ tôi chỗ cái ghế.  "
                       "Xoay camera xung quanh để bắt đầu nhận dạng. "
                       "Điện thoại sẽ rung khi tìm thấy vật và sẽ rung mạnh hơn khi đến gần vật. "
                       "Bạn cũng có thể chọn tính năng Xung Quanh để mô tả những gì camera nhìn thấy. "
